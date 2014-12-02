@@ -1,0 +1,96 @@
+The Iterator structure:
+	object* ptr -> one element in the array of objects of that is contained in the node.
+	stack { one element : Node* , current index in the path with respect to branch}
+
+Iterator algorithms :
+	equality : stack and object* ptr must be equal
+		=> The path from the root is same.
+
+VALID STATES
+Begin : Stack{ left most node in the tree, 0} (only top of stack specified)
+	=> the left child of that particular key is NULL.
+
+Last : Stack{ right most node in the tree , count }
+	=> The right child of that particular key is NULL.
+
+end :(one past the last)
+	Stack{ NULL , ptr NULL}
+
+ALGORITHMS:
+Iterate_To_First_Element
+	Input : Nothing
+	Output : An iterator that has state Begin.
+	if(count != 0)
+		push root , 0th branch by default.
+		if root is NULL
+			pop root
+			return Iterator (top's first element)
+		else
+			 return Btree(root.branch[0]).Iterate_To_First_Element
+	return undefined value
+
+Iterate_To_Last_Element
+	Input : Nothing
+	Output : An Iterator that has the state Last
+	if count != 0
+	push root , count+1
+		if root is NULL
+			pop root
+			return Iterator( top's last element)
+		else
+			return Btree(root.branch[last_branch]).Iterate_To_Last_Element.
+	return undefined value.
+
+Increment_Iterator
+	Input : An iterator with a particular state
+	Output : The same iterator with the next state
+
+	temp_pointer = current_pointer + 1
+
+	Increament the index in stack i.e change top's index : incr by one.
+	get the next branch to traverse :
+	push the branch obtained, 0
+	while top branch is not NULL : (i.e The branch that has been pushed into the stack.)
+		push top-> first branch , 0 : (The first child branch of the top)
+
+	** Now the top of the branch is NULL
+	pop that stack.
+	pointer = top's element (i.e the index is taken from the stack).
+	if The pointer is the same object pointer
+		while top's index is equal to count
+			pop
+		if stack is not NULL
+			pointer = top's element (i.e the index is taken from the stack).
+			return Iterator
+		else state end.(one past the last.)
+	return Iterator
+
+Decrement_Iterator
+	Input : An iterator with a particular state
+	Output : The same iterator with the previous state
+
+	temp_pointer = current_pointer - 1
+
+	get the previous branch to traverse :
+	if branch is not NULL
+		push the branch obtained, count of the particular branch.
+	else 
+		push the branch obtained,MAX.
+	while top branch is not NULL : i.e The branch that has been pushed into the stack.
+		if top->last is not NULL
+			push top->last branch, count of that particular branch.
+		else
+			push top->last branch,0
+	** Now the top of the branch is NULL
+	pop that stack.
+	decr the index of top element
+	pointer = top's element (i.e the index is taken from the stack).
+	if The pointer is the same object pointer
+		while top's index is equal to <=0
+			pop
+		is stack is not NULL
+			change the index of top element.
+			pointer = top's element(i.e the index is taken from the stack)
+			return iterator
+		else some begin state
+	return Iterator
