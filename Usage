@@ -1,0 +1,24 @@
+How TO use the BTREE
+
+A Btree generally has the following properties :
+      1. data in a particular node
+      2. The order of the BTree ( the number of children in each node )
+
+In our implementation we have the following structure...
+     1. THE data in the Btree ==>[ key , value ]
+     2. THe order of the Btree is a simple integer
+
+Here both the key and the value can be of any type as both are templates
+
+So the creation of a variable is the following :
+
+BTREE< keyType , ValueType, order >object ( key_iterator_begin , key_iterator_end , value_iterator_begin , value_iterator_end )
+
+Please look into the definition of the BTREE class ( derived from __BTREE__ )
+to find the interface supported.
+
+Please do add other functionalities... :-)
+KEYNOTE : Please adhere with the STL concepts before adding new functionalities
+
+Thanks..
+Abdus Salam Khazi
