@@ -1018,10 +1018,12 @@ class Btree : private __Btree< KeyObj<PK_T,RT> ,MAX>
 
 
 		Iterator search(PK_T key);
-		void display()
+    
+		inline void display() const
 		{
 			this->_Base::display();
 		}
+    
 		Iterator begin()
 		{
 			return Iterator(this->_Base::begin());
