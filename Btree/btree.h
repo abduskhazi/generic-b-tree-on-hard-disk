@@ -991,8 +991,9 @@ class Btree : private __Btree< KeyObj<PK_T,RT> ,MAX>
 				}
 		};
 		//constructors
-		template<typename ptr_T,typename ptr_RT>
-		Btree<PK_T,RT,MAX>(ptr_T begin , ptr_T end , ptr_RT begin_RT , ptr_RT end_RT) : _Base()
+		template<typename keyIterator,typename valueIterator>
+		Btree<PK_T,RT,MAX>(keyIterator begin , keyIterator end ,
+                           valueIterator begin_RT , valueIterator end_RT) : _Base()
 		{
 			vector<KeyObj<PK_T,RT> > v;
 

@@ -13,19 +13,20 @@ int main()
     
 	srand((unsigned)time(0));
     
-    vector<int> a(NUM_OF_ELEMENTS);
-	vector<MyByte> b;
+    vector<int> keyList;
+	vector<MyByte> valueList;
 
+    keyList.reserve(NUM_OF_ELEMENTS);
+    valueList.reserve(NUM_OF_ELEMENTS);
+    
 	for(int i =0 ; i < NUM_OF_ELEMENTS  ; ++i)
 	{
-		a[i] = rand();
-		b.emplace_back(MyByte(rand()));
+		keyList.emplace_back(rand());
+		valueList.emplace_back(MyByte(rand()));
 	}	
-	a[1] = 12;
+	keyList[1] = 12;
 
-	cout << "creation starts" << endl;
-	Btree<int, MyByte, 3> tree( a.cbegin() , a.cend() , b.cbegin() , b.cend());
-	cout << "creation ends" << endl;
+	Btree<int, MyByte, 3> tree( keyList.cbegin() , keyList.cend() , valueList.cbegin() , valueList.cend());
 	
 	tree.display();
 
