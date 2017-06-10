@@ -26,24 +26,10 @@ int main()
 	cout << "creation starts" << endl;
 	Btree<int, MyByte, 3> tree( a.cbegin() , a.cend() , b.cbegin() , b.cend());
 	cout << "creation ends" << endl;
-
 	
 	tree.display();
-	cout << "The iterator display:";
-	cout<<endl;
-	
-	Btree<int,MyByte,3>::Iterator it = tree.begin();
-	while(it!=tree.end())
-	{
-		pair< int , bitset<8> > p = *it;
-		cout<<"key: "<<p.first<<"  value: "<< p.second << " ";
 
-		cout << "RAM stored : ";
-		it.display();
-		cout<<endl;
-		++it;
-	}
-	it = tree.search(12);
+	auto it = tree.search(12);
 	pair< int , bitset<8> > p = *it;
 	cout<<"key: "<<p.first<<"value: "<<p.second<<endl;
 	
