@@ -30,8 +30,17 @@ int main()
 	tree.display();
 
 	auto it = tree.search(12);
-	pair< int , bitset<8> > p = *it;
-	cout<<"key: "<<p.first<<"value: "<<p.second<<endl;
+    if(it != tree.end())
+    {
+        int key;
+        MyByte value;
+        tie(key,value) = *it;
+        cout<<"key: " << key << " value: " << value << endl;
+    }
+    else
+    {
+        cout << "Key not found" << endl;
+    }
 	
     return 0;
 }
