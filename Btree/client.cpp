@@ -47,4 +47,5 @@ int main()
 	pair< int , bitset<8> > p = *it;
 	cout<<"key: "<<p.first<<"value: "<<p.second<<endl;
 	
+    return 0;
 }

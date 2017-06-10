@@ -951,6 +951,8 @@ template<typename PK_T , typename RT>
 ostream& operator<<(ostream& o , const KeyObj<PK_T,RT>& rhs)
 {
 	cout << "(" << rhs.key << "," << rhs.offset << ")";
+    
+    return o;
 }
 
 
