@@ -909,39 +909,39 @@ class KeyObj
 
 		//Destructor does not remove the file record as the file is to be deleted after the process gets killed.
 
-		//supporting all operators the key supports
-		//	Provides flexibilty for the key object to support just the lesser than operator 
-		//	and other operators can be derived.
+		//  Supporting all operators the key supports
+		//	Provides flexibilty for the key object to support just the lesser than
+        //  operator and other operators can be derived.
 
-		bool operator< (const KeyObj& rhs)const
-			{ return key < rhs.key; }
+		inline bool operator < (const KeyObj& rhs) const
+        {
+            return key < rhs.key;
+        }
 
-		bool operator> (const KeyObj& rhs)const
-			{
-				return !(key <= rhs.key);
-				//return key > rhs.key; 
-			}
+		inline bool operator > (const KeyObj& rhs) const
+		{
+			return rhs.key < key;
+		}
 
-		bool operator<=(const KeyObj& rhs)const
-			{ 
-				return (key < rhs.key || key == rhs.key);
-				//return key <= rhs.key; 
-			}
+		inline bool operator <= (const KeyObj& rhs) const
+		{
+			return !(rhs.key < key);
+		}
 
-		bool operator>=(const KeyObj& rhs)const
-			{ 
-				return !(key < rhs.key);
-				//return key >= rhs.key; 
-			}
+		inline bool operator >= (const KeyObj& rhs) const
+		{
+			return !(key < rhs.key);
+		}
 
-		bool operator==(const KeyObj& rhs)const
-			{
-				return !(key < rhs.key) && !(rhs.key < key); 
-				//return key == rhs.key;
-			}
+		inline bool operator == (const KeyObj& rhs) const
+		{
+			return !(key < rhs.key) && !(rhs.key < key);
+		}
 
-		bool operator!=(const KeyObj& rhs)const
-			{ return !(*this == rhs); }
+		inline bool operator != (const KeyObj& rhs) const
+        {
+            return (key < rhs.key) || (rhs.key < key);
+        }
 
 		template<typename PK_T_, typename RT_>
 		friend ostream& operator<<( ostream& o , const KeyObj<PK_T_ , RT_>& rhs);
