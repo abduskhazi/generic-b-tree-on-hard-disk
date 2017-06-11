@@ -282,43 +282,52 @@ template<typename T,int MAX>
 pair<T , pair< typename __Btree<T,MAX>::__Node* ,typename  __Btree<T,MAX>::__Node*> >
 	__Btree<T,MAX>::__Node::split(T key , __Node* left_child , __Node* right_child)
 {
+    __Node* left = NULL;
+    __Node* right = NULL;
+    T median;
+    
 	//We have a full node,
 	//	a key to insert
 	//		Do we check full node?? : no
 	//		The prgrammer gets what he deserves
 
-		//obtain the median
-		// create 2 nodes
-		//	return median and pair<nodes>
-		//MEDIAN POS MAY BE : ODD OR EVEN
+	//obtain the median
+	// create 2 nodes
+	//	return median and pair<nodes>
+	//MEDIAN POS MAY BE : ODD OR EVEN
 
 	int median_pos = floor( count/2 );
+    
 	if(key>=keys[median_pos])
 	{
-		//median= keys[median_pos]
-		__Node* left = new __Node(keys, keys+median_pos, branches, branches+median_pos+1 );
-		__Node* right= new __Node(keys+median_pos+1, keys+count,branches+median_pos+1, branches+count+1);
+        median = keys[median_pos];
+		left   = new __Node(keys, keys+median_pos, branches, branches+median_pos+1 );
+		right  = new __Node(keys+median_pos+1, keys+count,branches+median_pos+1, branches+count+1);
+        
 		right->insert(key , left_child , right_child);
-		return pair<T, pair<__Node*,__Node*> >( keys[median_pos], pair<__Node*,__Node*>(left,right) );
+		
 	}
 	else if(key>keys[median_pos-1])
 	{
-		//median= key itself
-		//The shared link is got split as : left_child and right child.
-		__Node* left = new __Node(keys, keys+median_pos, branches , branches+median_pos);
-		__Node* right= new __Node(keys+median_pos, keys+count, branches+median_pos, branches+count+1 );
+        //The shared link is got split as : left_child and right child.
+        
+        median = key;
+		left   = new __Node(keys, keys+median_pos, branches , branches+median_pos);
+		right  = new __Node(keys+median_pos, keys+count, branches+median_pos, branches+count+1 );
+        
 		left->branches[median_pos]=left_child;
 		right->branches[0] = right_child;
-		return pair<T,pair<__Node*,__Node*> >(key, pair<__Node*,__Node*>(left, right));
 	}
 	else
 	{
-		//median = keys[median_pos-1]
-		__Node* left = new __Node(keys, keys+median_pos-1,branches, branches+median_pos);
-		left->insert(key,left_child,right_child);
-		__Node* right = new __Node(keys+median_pos,keys+count, branches+median_pos, branches+count+1);
-		return pair<T , pair<__Node*,__Node*> >( keys[median_pos-1] , pair<__Node*,__Node*>(left,right));
+        median = keys[median_pos-1];
+        left   = new __Node(keys, keys+median_pos-1,branches, branches+median_pos);
+		right  = new __Node(keys+median_pos,keys+count, branches+median_pos, branches+count+1);
+        
+        left->insert(key,left_child,right_child);
 	}
+    
+    return make_pair( median, make_pair(left,right) );
 }
 
 template<typename T,int MAX>
