@@ -858,7 +858,7 @@ ostream& operator<<( ostream& o , const typename __Btree<Y,MAX_Y>::__Iterator& i
 
 
 //The class to support encapsulation of key and offset.
-template<typename KeyType , typename ValueType>
+template<typename KeyType>
 class KeyObj
 {
 	public:
@@ -904,8 +904,8 @@ class KeyObj
             return (_key < rhs._key) || (rhs._key < _key);
         }
 
-		template<typename PK_T_, typename RT_>
-		friend ostream& operator<<( ostream& o , const KeyObj<PK_T_ , RT_>& rhs);
+		template<typename PK_T_>
+		friend ostream& operator<<( ostream& o , const KeyObj<PK_T_>& rhs);
     
     unsigned long get_offset() const
     {
@@ -917,8 +917,8 @@ private:
     unsigned long _offset;
 };
 
-template<typename PK_T , typename RT>
-ostream& operator<<(ostream& o , const KeyObj<PK_T,RT>& rhs)
+template<typename PK_T>
+ostream& operator<<(ostream& o , const KeyObj<PK_T>& rhs)
 {
 	cout << "(" << rhs._key << "," << rhs._offset << ")";
     
@@ -932,9 +932,9 @@ ostream& operator<<(ostream& o , const KeyObj<PK_T,RT>& rhs)
 
 //The class that actually interfaces with the client
 template<typename KeyType , typename ValueType , int BTreeOrder>
-class Btree : private __Btree< KeyObj<KeyType,ValueType> ,BTreeOrder>
+class Btree : private __Btree< KeyObj<KeyType> ,BTreeOrder>
 {
-    typedef KeyObj<KeyType,ValueType> BTreeElement;
+    typedef KeyObj<KeyType> BTreeElement;
     
     typedef __Btree< BTreeElement , BTreeOrder> _Base;
     typedef typename _Base::__Iterator _Base_Iterator;
