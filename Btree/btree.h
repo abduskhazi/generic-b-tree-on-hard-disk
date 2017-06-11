@@ -961,11 +961,11 @@ ostream& operator<<(ostream& o , const KeyObj<PK_T,RT>& rhs)
 
 
 //The class that actually interfaces with the client
-template<typename PK_T , typename RT , int MAX>
-class Btree : private __Btree< KeyObj<PK_T,RT> ,MAX>
+template<typename KeyType , typename ValueType , int BTreeOrder>
+class Btree : private __Btree< KeyObj<KeyType,ValueType> ,BTreeOrder>
 {
-	typedef __Btree< KeyObj<PK_T,RT> ,MAX> _Base;
-	typedef Btree<PK_T,RT,MAX> Btree_t;
+	typedef __Btree< KeyObj<KeyType,ValueType> ,BTreeOrder> _Base;
+	typedef Btree<KeyType,ValueType,BTreeOrder> Btree_t;
 
 	private : 
 		fstream file_t;
@@ -980,22 +980,22 @@ class Btree : private __Btree< KeyObj<PK_T,RT> ,MAX>
 				{
 					
 				}
-				pair<PK_T,RT> operator*() const
+				pair<KeyType,ValueType> operator*() const
 				{
 
 					//KeyObj<PK_T,RT> temp_obj = *( (_Base_iterator)(*this) );
 
-					KeyObj<PK_T,RT> temp_obj = (* (typename _Base::__Iterator)(*this) );
+					KeyObj<KeyType,ValueType> temp_obj = (* (_Base_Iterator)(*this) );
 					
-					return pair<PK_T,RT>(temp_obj.get_key(), temp_obj.get_record());
+					return pair<KeyType,ValueType>(temp_obj.get_key(), temp_obj.get_record());
 				}
 		};
 		//constructors
 		template<typename keyIterator,typename valueIterator>
-		Btree<PK_T,RT,MAX>(keyIterator begin , keyIterator end ,
+		Btree<KeyType,ValueType,BTreeOrder>(keyIterator begin , keyIterator end ,
                            valueIterator begin_RT , valueIterator end_RT) : _Base()
 		{
-			vector<KeyObj<PK_T,RT> > v;
+			vector<KeyObj<KeyType,ValueType> > v;
 
 			//call insert of the base class
 			//create a fstream object to write the records into the file.
@@ -1003,7 +1003,7 @@ class Btree : private __Btree< KeyObj<PK_T,RT> ,MAX>
 			file_t.open("data.dat" , fstream::in | fstream::out  | fstream::trunc | fstream::binary);
 			while (begin != end)
 			{
-				KeyObj<PK_T,RT> keyObj_t(*begin,*begin_RT, file_t,"data.dat");		//*begin will give key
+				KeyObj<KeyType,ValueType> keyObj_t(*begin,*begin_RT, file_t,"data.dat");		//*begin will give key
 				v.push_back(keyObj_t);
 				++begin;
 				++begin_RT;
@@ -1017,7 +1017,7 @@ class Btree : private __Btree< KeyObj<PK_T,RT> ,MAX>
 		}
 
 
-		Iterator search(PK_T key);
+		Iterator search(KeyType key);
     
 		inline void display() const
 		{
