@@ -964,78 +964,80 @@ ostream& operator<<(ostream& o , const KeyObj<PK_T,RT>& rhs)
 template<typename KeyType , typename ValueType , int BTreeOrder>
 class Btree : private __Btree< KeyObj<KeyType,ValueType> ,BTreeOrder>
 {
-	typedef __Btree< KeyObj<KeyType,ValueType> ,BTreeOrder> _Base;
-	typedef Btree<KeyType,ValueType,BTreeOrder> Btree_t;
+    typedef __Btree< KeyObj<KeyType,ValueType> ,BTreeOrder> _Base;
+    typedef Btree<KeyType,ValueType,BTreeOrder> Btree_t;
+    
 
-	private : 
-		fstream file_t;
+    public:
+        class Iterator:public _Base::__Iterator
+        {
+            typedef typename _Base::__Iterator _Base_Iterator;
 
-	public:
-		class Iterator:public _Base::__Iterator
-		{
-			typedef typename _Base::__Iterator _Base_Iterator;
+            public:
+                Iterator( const _Base_Iterator& rhs)
+                    : _Base_Iterator( rhs )
+				{ }
 
-			public:
-				Iterator( const _Base_Iterator& rhs) : _Base_Iterator( rhs )
-				{
-					
-				}
-				pair<KeyType,ValueType> operator*() const
-				{
+                pair<KeyType,ValueType> operator*() const
+                {
+                    //KeyObj<PK_T,RT> temp_obj = *( (_Base_iterator)(*this) );
 
-					//KeyObj<PK_T,RT> temp_obj = *( (_Base_iterator)(*this) );
+                    KeyObj<KeyType,ValueType> temp_obj = (* (_Base_Iterator)(*this) );
 
-					KeyObj<KeyType,ValueType> temp_obj = (* (_Base_Iterator)(*this) );
-					
-					return pair<KeyType,ValueType>(temp_obj.get_key(), temp_obj.get_record());
-				}
-		};
-		//constructors
-		template<typename keyIterator,typename valueIterator>
-		Btree<KeyType,ValueType,BTreeOrder>(keyIterator begin , keyIterator end ,
+                    return pair<KeyType,ValueType>(temp_obj.get_key(), temp_obj.get_record());
+                }
+        };
+
+        template<typename keyIterator,typename valueIterator>
+        Btree<KeyType,ValueType,BTreeOrder>(keyIterator begin , keyIterator end ,
                            valueIterator begin_RT , valueIterator end_RT) : _Base()
-		{
-			vector<KeyObj<KeyType,ValueType> > v;
+        {
+            vector<KeyObj<KeyType,ValueType> > v;
 
-			//call insert of the base class
-			//create a fstream object to write the records into the file.
+            //call insert of the base class
+            //create a fstream object to write the records into the file.
 
-			file_t.open("data.dat" , fstream::in | fstream::out  | fstream::trunc | fstream::binary);
-			while (begin != end)
-			{
-				KeyObj<KeyType,ValueType> keyObj_t(*begin,*begin_RT, file_t,"data.dat");		//*begin will give key
-				v.push_back(keyObj_t);
-				++begin;
-				++begin_RT;
-			}
-			this->_Base::insert_sequence(v.begin(),v.end());
-		}
-		
-		~Btree()
-		{
-			file_t.close();
-		}
+            file_t.open("data.dat" , fstream::in | fstream::out  | fstream::trunc | fstream::binary);
+            while (begin != end)
+            {
+                KeyObj<KeyType,ValueType> keyObj_t(*begin,*begin_RT, file_t,"data.dat");		//*begin will give key
+                v.push_back(keyObj_t);
+                ++begin;
+                ++begin_RT;
+            }
+            this->_Base::insert_sequence(v.begin(),v.end());
+        }
 
+        ~Btree()
+        {
+            file_t.close();
+        }
 
-		Iterator search(KeyType key);
+        Iterator search(KeyType key);
     
-		inline void display() const
-		{
-			this->_Base::display();
-		}
-    
-		Iterator begin()
-		{
-			return Iterator(this->_Base::begin());
-		}
-		Iterator end()
-		{
-			return Iterator(this->_Base::end());
-		}
-		Iterator last()
-		{
-			return Iterator(this->_Base::last());
-		}
+        inline void display() const
+        {
+            this->_Base::display();
+        }
+
+        Iterator begin()
+        {
+            return Iterator(this->_Base::begin());
+        }
+
+        Iterator end()
+        {
+            return Iterator(this->_Base::end());
+        }
+
+        Iterator last()
+        {
+            return Iterator(this->_Base::last());
+        }
+
+    private :
+        fstream file_t;
+
 };
 
 
