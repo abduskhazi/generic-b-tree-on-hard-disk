@@ -858,99 +858,69 @@ ostream& operator<<( ostream& o , const typename __Btree<Y,MAX_Y>::__Iterator& i
 
 
 //The class to support encapsulation of key and offset.
-template<typename PK_T , typename RT>
+template<typename KeyType , typename ValueType>
 class KeyObj
 {
-	private:
-		PK_T key;
-		unsigned long offset;
-		string filename;
 	public:
-		explicit KeyObj( PK_T key = PK_T() )
-			: key(key)
+
+		KeyObj( const KeyType& key = KeyType(),
+                unsigned long offset = -1 )
+            : _key(key), _offset(offset)
 		{
-			offset = (unsigned long)-1; // A very large offset a dummy keyObj
 		}
 
-
-		KeyObj( const PK_T& key , const RT& record , fstream& file, string name)
-			: key(key)
+		KeyType get_key() const
 		{
-			filename=name;
-			//create the record
-			file.seekp(0 , ios::end);
-			offset = file.tellp();
-			file.write( reinterpret_cast<const char*>(&record) , sizeof(record));
+			return _key;
 		}
-
-		PK_T get_key()
-		{
-			return key;
-		}
-
-		RT get_record()
-		{
-			RT new_obj;
-			fstream file;
-			file.open(filename.c_str(),fstream::in | fstream::out);
-
-			file.seekg(offset);
-			file.read( reinterpret_cast<char*>(&new_obj), sizeof(new_obj));
-
-			file.close();
-			return new_obj;
-		}
-		
-#if 0
-//	deprecated
-			file << record << endl;
-		This makes the client dependent on out implementation
-#endif
-
-		//Destructor does not remove the file record as the file is to be deleted after the process gets killed.
-
-		//  Supporting all operators the key supports
-		//	Provides flexibilty for the key object to support just the lesser than
-        //  operator and other operators can be derived.
 
 		inline bool operator < (const KeyObj& rhs) const
         {
-            return key < rhs.key;
+            return _key < rhs._key;
         }
 
 		inline bool operator > (const KeyObj& rhs) const
 		{
-			return rhs.key < key;
+			return rhs._key < _key;
 		}
 
 		inline bool operator <= (const KeyObj& rhs) const
 		{
-			return !(rhs.key < key);
+			return !(rhs._key < _key);
 		}
 
 		inline bool operator >= (const KeyObj& rhs) const
 		{
-			return !(key < rhs.key);
+			return !(_key < rhs._key);
 		}
 
 		inline bool operator == (const KeyObj& rhs) const
 		{
-			return !(key < rhs.key) && !(rhs.key < key);
+			return !(_key < rhs._key) && !(rhs._key < _key);
 		}
 
 		inline bool operator != (const KeyObj& rhs) const
         {
-            return (key < rhs.key) || (rhs.key < key);
+            return (_key < rhs._key) || (rhs._key < _key);
         }
 
 		template<typename PK_T_, typename RT_>
 		friend ostream& operator<<( ostream& o , const KeyObj<PK_T_ , RT_>& rhs);
+    
+    unsigned long get_offset() const
+    {
+        return _offset;
+    }
+    
+private:
+    KeyType _key;
+    unsigned long _offset;
 };
 
 template<typename PK_T , typename RT>
 ostream& operator<<(ostream& o , const KeyObj<PK_T,RT>& rhs)
 {
-	cout << "(" << rhs.key << "," << rhs.offset << ")";
+	cout << "(" << rhs._key << "," << rhs._offset << ")";
     
     return o;
 }
@@ -984,8 +954,17 @@ class Btree : private __Btree< KeyObj<KeyType,ValueType> ,BTreeOrder>
 
             while (keySequence_begin != keySequence_end)
             {
-                BTreeElement keyObj_t(*keySequence_begin,*valueSequence_begin, file_t,"data.dat");		//*begin will give key
-                bTreeElementList.push_back(keyObj_t);
+                const auto& key   = *keySequence_begin;
+                const auto& value = *valueSequence_begin;
+                
+                file_t.seekp(0, ios::end);
+                auto offset = file_t.tellp();
+                file_t.write(reinterpret_cast<const char*>(&value), sizeof(value));
+                
+                BTreeElement element(key,offset);
+                bTreeElementList.push_back(std::move(element));
+                
+                
                 ++keySequence_begin;
                 ++valueSequence_begin;
             }
@@ -1001,21 +980,26 @@ class Btree : private __Btree< KeyObj<KeyType,ValueType> ,BTreeOrder>
         class Iterator : public _Base_Iterator
         {
             public:
-                Iterator( const _Base_Iterator& rhs)
-                    : _Base_Iterator( rhs )
+                Iterator( const _Base_Iterator& rhs, Btree& containerTree)
+                    : _Base_Iterator( rhs ),
+                      _containerTree(containerTree)
                 { }
         
-                pair<KeyType,ValueType> operator*() const
+                pair<KeyType,ValueType> operator*()
                 {
                     BTreeElement element = _Base_Iterator::operator*();
-                    return make_pair(element.get_key(), element.get_record());
+                    const auto& key = element.get_key();
+                    const auto& value = _containerTree.get_record(element.get_offset());
+                    return make_pair(key, value);
                 }
+            private:
+                Btree& _containerTree;
         };
     
         Iterator search(KeyType key)
         {
             BTreeElement element(key);
-            return _Base::search(element);
+            return Iterator(_Base::search(element), *this);
         }
     
         inline void display() const
@@ -1025,12 +1009,12 @@ class Btree : private __Btree< KeyObj<KeyType,ValueType> ,BTreeOrder>
 
         Iterator begin()
         {
-            return _Base::begin();
+            return Iterator(_Base::begin(), *this);
         }
 
         Iterator end()
         {
-            return _Base::end();
+            return Iterator(_Base::end(), *this);
         }
 
         Iterator last()
@@ -1039,6 +1023,17 @@ class Btree : private __Btree< KeyObj<KeyType,ValueType> ,BTreeOrder>
         }
 
     private :
+    
+        ValueType get_record(unsigned long offset)
+        {
+            ValueType value;
+            
+            file_t.seekg(offset);
+            file_t.read( reinterpret_cast<char*>(&value), sizeof(value));
+            
+            return value;
+        }
+    
         fstream file_t;
 
 };
