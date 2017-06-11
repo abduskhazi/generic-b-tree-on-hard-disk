@@ -36,7 +36,7 @@ class __Btree
 {
 	private:
 		struct __Node;
-		typedef pair< T, pair<__Node*,__Node*> > node_split;
+		typedef tuple< T , __Node* , __Node* > node_split;
 		struct __Node //canonical?? yes
 		{
 			//data
@@ -58,7 +58,7 @@ class __Btree
 				bool search_node(T target , int* pos) const;
 
 				T* search( T key ); //?????
-				pair<T , pair<__Node*,__Node*> > split(T key , __Node* left_child = NULL, __Node* right_child = NULL);
+				tuple<T , __Node*,__Node* > split(T key , __Node* left_child = NULL, __Node* right_child = NULL);
 
 				
 				int get_count() const{ return count;}
@@ -279,7 +279,7 @@ bool __Btree<T,MAX>::__Node::insert(T key, __Node* left , __Node* right)
 
 
 template<typename T,int MAX>
-pair<T , pair< typename __Btree<T,MAX>::__Node* ,typename  __Btree<T,MAX>::__Node*> >
+tuple<T , typename __Btree<T,MAX>::__Node* ,typename  __Btree<T,MAX>::__Node* >
 	__Btree<T,MAX>::__Node::split(T key , __Node* left_child , __Node* right_child)
 {
     __Node* left = NULL;
@@ -324,10 +324,10 @@ pair<T , pair< typename __Btree<T,MAX>::__Node* ,typename  __Btree<T,MAX>::__Nod
         left   = new __Node(keys, keys+median_pos-1,branches, branches+median_pos);
 		right  = new __Node(keys+median_pos,keys+count, branches+median_pos, branches+count+1);
         
-        left->insert(key,left_child,right_child);
+        left->insert( key , left_child , right_child);
 	}
     
-    return make_pair( median, make_pair(left,right) );
+    return make_tuple( median, left , right );
 }
 
 template<typename T,int MAX>
@@ -436,12 +436,7 @@ bool __Btree<T,MAX>::pushdown(__Node** root_ptr, T key , node_split& p)
 	__Node* root = *root_ptr;
 	if( root == NULL)
 	{
-		p.first = key;
-		p.second.first = NULL;
-		p.second.first = NULL;
-#if 0
-		cout << p.first << p.second.first << p.second.second << endl;
-#endif
+		p = make_tuple(key, (__Node*)NULL, (__Node*)NULL);
 		return false;
 	}
 	else
@@ -453,10 +448,10 @@ bool __Btree<T,MAX>::pushdown(__Node** root_ptr, T key , node_split& p)
 			if(! __Btree<T,MAX>::pushdown( &root->branches[pos], key , pair_below))
 			{
 				//could not be inserted below.
-				if(!root->insert( pair_below.first , pair_below.second.first , pair_below.second.second ) )
+				if(!root->insert( get<0>(pair_below) , get<1>(pair_below) , get<2>(pair_below)))
 				{
 					//could not be inserted in the current node.
-					p = root->split(pair_below.first , pair_below.second.first , pair_below.second.second );
+					p = root->split(get<0>(pair_below) , get<1>(pair_below) ,get<2>(pair_below));
 
 					delete root;
 					*root_ptr = NULL;
@@ -482,7 +477,14 @@ bool __Btree<T,MAX>::insert(T key)
 		delete this->root;
 		root = new __Node();
 		if(root == NULL) return false;
-		root->insert(var_split.first, var_split.second.first ,var_split.second.second);
+        
+        T median;
+        __Node* left = NULL;
+        __Node* right = NULL;
+        
+        tie(median, left, right) = var_split;
+        
+		root->insert(median, left ,right);
 	}
 	return true;
 }
