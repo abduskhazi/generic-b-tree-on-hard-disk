@@ -992,12 +992,6 @@ class Btree : private __Btree< KeyObj<KeyType,ValueType> ,BTreeOrder>
             
             _Base::insert_sequence(bTreeElementList.cbegin(),bTreeElementList.cend());
         }
-    
-        template<typename Iterator>
-        Btree(Iterator begin, Iterator end)
-        {
-            
-        }
 
         ~Btree()
         {
