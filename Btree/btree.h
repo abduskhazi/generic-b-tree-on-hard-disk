@@ -964,48 +964,39 @@ ostream& operator<<(ostream& o , const KeyObj<PK_T,RT>& rhs)
 template<typename KeyType , typename ValueType , int BTreeOrder>
 class Btree : private __Btree< KeyObj<KeyType,ValueType> ,BTreeOrder>
 {
-    typedef __Btree< KeyObj<KeyType,ValueType> ,BTreeOrder> _Base;
-    typedef Btree<KeyType,ValueType,BTreeOrder> Btree_t;
+    typedef KeyObj<KeyType,ValueType> BTreeElement;
     
-
+    typedef __Btree< BTreeElement , BTreeOrder> _Base;
+    typedef typename _Base::__Iterator _Base_Iterator;
+    
     public:
-        class Iterator:public _Base::__Iterator
+
+        template<typename KeyIterator,typename ValueIterator>
+        Btree(KeyIterator   keySequence_begin   , KeyIterator   keySequence_end ,
+              ValueIterator valueSequence_begin , ValueIterator /*valueSequnce_end*/)
         {
-            typedef typename _Base::__Iterator _Base_Iterator;
-
-            public:
-                Iterator( const _Base_Iterator& rhs)
-                    : _Base_Iterator( rhs )
-				{ }
-
-                pair<KeyType,ValueType> operator*() const
-                {
-                    //KeyObj<PK_T,RT> temp_obj = *( (_Base_iterator)(*this) );
-
-                    KeyObj<KeyType,ValueType> temp_obj = (* (_Base_Iterator)(*this) );
-
-                    return pair<KeyType,ValueType>(temp_obj.get_key(), temp_obj.get_record());
-                }
-        };
-
-        template<typename keyIterator,typename valueIterator>
-        Btree<KeyType,ValueType,BTreeOrder>(keyIterator begin , keyIterator end ,
-                           valueIterator begin_RT , valueIterator end_RT) : _Base()
-        {
-            vector<KeyObj<KeyType,ValueType> > v;
-
-            //call insert of the base class
             //create a fstream object to write the records into the file.
+            file_t.open("data.dat" ,
+                        fstream::in | fstream::out | fstream::trunc | fstream::binary
+                        );
+            
+            vector<BTreeElement> bTreeElementList;
 
-            file_t.open("data.dat" , fstream::in | fstream::out  | fstream::trunc | fstream::binary);
-            while (begin != end)
+            while (keySequence_begin != keySequence_end)
             {
-                KeyObj<KeyType,ValueType> keyObj_t(*begin,*begin_RT, file_t,"data.dat");		//*begin will give key
-                v.push_back(keyObj_t);
-                ++begin;
-                ++begin_RT;
+                BTreeElement keyObj_t(*keySequence_begin,*valueSequence_begin, file_t,"data.dat");		//*begin will give key
+                bTreeElementList.push_back(keyObj_t);
+                ++keySequence_begin;
+                ++valueSequence_begin;
             }
-            this->_Base::insert_sequence(v.begin(),v.end());
+            
+            _Base::insert_sequence(bTreeElementList.cbegin(),bTreeElementList.cend());
+        }
+    
+        template<typename Iterator>
+        Btree(Iterator begin, Iterator end)
+        {
+            
         }
 
         ~Btree()
@@ -1013,44 +1004,49 @@ class Btree : private __Btree< KeyObj<KeyType,ValueType> ,BTreeOrder>
             file_t.close();
         }
 
-        Iterator search(KeyType key);
+        class Iterator : public _Base_Iterator
+        {
+            public:
+                Iterator( const _Base_Iterator& rhs)
+                    : _Base_Iterator( rhs )
+                { }
+        
+                pair<KeyType,ValueType> operator*() const
+                {
+                    BTreeElement element = _Base_Iterator::operator*();
+                    return make_pair(element.get_key(), element.get_record());
+                }
+        };
+    
+        Iterator search(KeyType key)
+        {
+            BTreeElement element(key);
+            return _Base::search(element);
+        }
     
         inline void display() const
         {
-            this->_Base::display();
+            _Base::display();
         }
 
         Iterator begin()
         {
-            return Iterator(this->_Base::begin());
+            return _Base::begin();
         }
 
         Iterator end()
         {
-            return Iterator(this->_Base::end());
+            return _Base::end();
         }
 
         Iterator last()
         {
-            return Iterator(this->_Base::last());
+            return _Base::last();
         }
 
     private :
         fstream file_t;
 
 };
-
-
-
-template<typename PK_T , typename RT , int MAX>
-typename Btree<PK_T,RT,MAX>::Iterator Btree<PK_T,RT,MAX>::search(PK_T key)
-{
-	KeyObj<PK_T,RT> k(key);
-	typename _Base::__Iterator it =_Base::search(k);
-//	return (Btree<PK_T,RT,MAX>::Iterator) it;
-	return Btree<PK_T,RT,MAX>::Iterator( it );
-}
-
-
 
 #endif
