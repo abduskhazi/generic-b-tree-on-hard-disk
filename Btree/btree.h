@@ -874,6 +874,11 @@ class KeyObj
 			return _key;
 		}
 
+        unsigned long get_offset() const
+        {
+            return _offset;
+        }
+    
 		inline bool operator < (const KeyObj& rhs) const
         {
             return _key < rhs._key;
@@ -904,21 +909,16 @@ class KeyObj
             return (_key < rhs._key) || (rhs._key < _key);
         }
 
-		template<typename PK_T_>
-		friend ostream& operator<<( ostream& o , const KeyObj<PK_T_>& rhs);
-    
-    unsigned long get_offset() const
-    {
-        return _offset;
-    }
+		template<typename T>
+		friend ostream& operator<<( ostream& o , const KeyObj<T>& rhs);
     
 private:
     KeyType _key;
     unsigned long _offset;
 };
 
-template<typename PK_T>
-ostream& operator<<(ostream& o , const KeyObj<PK_T>& rhs)
+template<typename T>
+ostream& operator<<(ostream& o , const KeyObj<T>& rhs)
 {
 	cout << "(" << rhs._key << "," << rhs._offset << ")";
     
@@ -987,7 +987,7 @@ class Btree : private __Btree< KeyObj<KeyType> ,BTreeOrder>
         
                 pair<KeyType,ValueType> operator*()
                 {
-                    BTreeElement element = _Base_Iterator::operator*();
+                    const BTreeElement& element = _Base_Iterator::operator*();
                     const auto& key = element.get_key();
                     const auto& value = _containerTree.get_record(element.get_offset());
                     return make_pair(key, value);
