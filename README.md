@@ -1,56 +1,67 @@
-TITLE : GENERIC BTREE IMPLEMENTATION ON HARD DISK.
-COURSE : GENERIC PROGRAMMING ( 10CS368 )
+# Generic B-Tree on Hard Disk
 
+> A generic C++ B-Tree that keeps the **index in RAM** while storing **records on disk**.
 
+The project explores a simple storage design:
 
-INTRODUCTION :
-	B-Tree is an excellent data structure for storing huge amounts of data for
-fast retrieval. As accessing any part of the tree for reading or writing requires
-visiting only a few nodes unlike traditional binary trees. The idea is to create a generic
-homogeneous B-Tree data structure with the keys in RAM and Records in hard disk.
+```text
+             RAM
+      ┌─────────────────┐
+      │   B-Tree        │
+      │ Key → Offset    │
+      └────────┬────────┘
+               │
+            seek()
+               ▼
+             Disk
+      ┌─────────────────┐
+      │    data.dat     │
+      │    Records      │
+      └─────────────────┘
+```
 
-OBJECTIVE :
-	=>To reduce the burden on RAM for Btrees with huge records.
+Instead of storing complete records inside the tree, each key stores an offset pointing to its record in `data.dat`. This keeps the in-memory index smaller, especially when records are large.
 
-INTERFACE SUPPORTED:
-	=>Creation of The Btree
-		Pass 2 sequences one for the keys and one for records.
+## Highlights
 
-	=>Insertion into a btree.
-		Inserting the keys into a Btree in ascending order based on less<key_type> specified.
+* **Generic B-Tree** implemented with C++ templates.
+* **Disk-backed records** using file offsets.
+* **Bidirectional iterator** for forward and reverse traversal.
+* Separate layers for **B-Tree logic** and **disk storage**.
 
-	=>Bidirectional iterator.
-		=>The Iterator moves through the Btree based on the logical inorder traversal for the forward traversal.
+The core structure is:
 
-	=>Searching for a particular key.
-		Returns a pair of key and record objects.
+```cpp
+__Btree<T, MAX>
+```
 
-	=>Deletion of a tree.
-		In the destructor of the tree.
+while the disk-backed interface is:
 
-IMPLEMENTATION ISSUES AND PHILOSOPHIES:
-	=>Base class __Btree< object type , order> handles the contruction of Btree on the RAM and provides other functionalities
-		required for Btree manipulation as mentioned above
-	=>The derived class Btree< key , record , order> wraps the key in an object called KeyObj and uses the
-		the base class for all RAM manipulations.
-		The additional functionality is that of storing the record in a file.
-		There is offset stored in the KeyObj that corresponds to the record of a particular key.
+```cpp
+Btree<KeyType, ValueType, BTreeOrder>
+```
 
-	=>L value for the key not supported as the logical structure of the tree could go for a toss.
+Each stored key is associated with a `KeyObj` containing the key and its disk offset.
 
-Possible expansions to the project
-	The other 2 possibilty of
-		key in RAM record in RAM.
-		Key in hard disk and record in Hard disk.
-	can be supported by deriving the base class in 2 diff derived classes.
-	=>L val for records could be supported for record modification.
+## Interesting Implementation Detail
 
-ANOMOLIES :
-	=>Duplicate keys are not supported.
-	=>Deletion of keys not supported.	
-	=>Btree<1> specialization( binary tree ) to be done as the general version does not currectly support binary tree.
+The iterator maintains the traversal path using a stack, allowing both:
 
-MEMBERS:
-Akshay Mallya		1PI10CS010
-Abhishek Patil		1PI10CS004
-Abdus Salam Khazi	1PI10CS001
+```cpp
+++it
+--it
+```
+
+for bidirectional traversal.
+
+## Limitations
+
+The current implementation does not support duplicate keys, key deletion, or general serialization of complex C++ objects.
+
+## Possible Extensions
+
+Persistent B-Tree nodes, record updates, and more robust serialization would be natural next steps.
+
+**Generic Programming — 10CS368**
+
+**Abdus Salam Khazi · Akshay Mallya · Abhishek Patil**
